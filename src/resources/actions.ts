@@ -43,16 +43,16 @@ export class Actions {
   /**
    * Retrieves an action
    */
-  retrieve(params: ActionRetrieveParams, body?: RequestOptions) {
+  retrieve(params: ActionRetrieveParams, options?: RequestOptions) {
     const query = makeQueryParams({ incident_id: params.incident_id, incident_mode: params.incident_mode })
 
-    return this._client.get<Action>(`/actions?${query}`)
+    return this._client.get<Action>(`/actions?${query}`, options)
   }
 
   /**
    * List actions for a given ID
    */
-  list(id: string) {
-    return this._client.get<Action[]>(`/actions/${id}`)
+  list(id: string, options?: RequestOptions) {
+    return this._client.get<Action[]>(`/actions/${id}`, options)
   }
 }

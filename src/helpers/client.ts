@@ -1,6 +1,21 @@
+import { OverrideProps } from "./typescript"
+
+export interface ApiError {
+  type: string
+  status: number
+  request_id: string
+  errors: Array<{
+    code: string
+    message: string
+  }>
+}
+
 export type Headers = Record<string, string>
 
-export type RequestOptions = Omit<RequestInit, "method">
+/**
+ * Forces headers to be an object type
+ */
+export type RequestOptions = OverrideProps<Omit<RequestInit, "method">, { headers?: Headers }>
 
 export class ApiClient {
   constructor(private apiKey: string) {}
@@ -30,30 +45,42 @@ export class ApiClient {
     return { ...restOptions, headers: mergedHeaders }
   }
 
+  private async handleRequest<T>(url: string, options: RequestInit): Promise<T> {
+    const response = await fetch(url, options)
+
+    // First check if the response is ok
+    if (response.ok) return (await response.json()) as T
+
+    // If not ok, try to parse the error response
+    try {
+      const errorData = (await response.json()) as ApiError
+      throw errorData
+    } catch (error) {
+      throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
+    }
+  }
+
   public async get<T>(path: string, options?: RequestOptions): Promise<T> {
     const mergedOptions = this.mergeOptions(options)
 
-    return await fetch(`${this.baseUrl}/${path}`, { method: "GET", ...mergedOptions }).then((res) => {
-      if (res.ok) return res.json()
-      else throw new Error(res.statusText)
-    })
+    return this.handleRequest<T>(`${this.baseUrl}/${path}`, { method: "GET", ...mergedOptions })
   }
 
   public async post<T>(path: string, options?: RequestOptions): Promise<T> {
     const mergedOptions = this.mergeOptions(options)
 
-    return await fetch(`${this.baseUrl}/${path}`, { method: "POST", ...mergedOptions }).then((res) => {
-      if (res.ok) return res.json()
-      else throw new Error(res.statusText)
-    })
+    return this.handleRequest<T>(`${this.baseUrl}/${path}`, { method: "POST", ...mergedOptions })
+  }
+
+  public async put<T>(path: string, options?: RequestOptions): Promise<T> {
+    const mergedOptions = this.mergeOptions(options)
+
+    return this.handleRequest<T>(`${this.baseUrl}/${path}`, { method: "PUT", ...mergedOptions })
   }
 
   public async delete<T>(path: string, options?: RequestOptions): Promise<T> {
     const mergedOptions = this.mergeOptions(options)
 
-    return await fetch(`${this.baseUrl}/${path}`, { method: "DELETE", ...mergedOptions }).then((res) => {
-      if (res.ok) return res.json()
-      else throw new Error(res.statusText)
-    })
+    return this.handleRequest<T>(`${this.baseUrl}/${path}`, { method: "DELETE", ...mergedOptions })
   }
 }
