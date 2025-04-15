@@ -1,10 +1,12 @@
 import { ApiClient } from "./helpers/client"
 import { Actions } from "./resources/actions"
-import { AlertAttribute } from "./resources/alert-attribute"
+import { AlertAttributes } from "./resources/alert-attribute"
+import { AlertEvents } from "./resources/alert-event"
 
 interface IncidentV2 {
   actions: Actions
-  alert_attribute: AlertAttribute
+  alert_attributes: AlertAttributes
+  alert_events: AlertEvents
 }
 
 export class Incident {
@@ -15,7 +17,8 @@ export class Incident {
     this.client = new ApiClient(config.apiKey)
     this.v2 = {
       actions: new Actions(this.client),
-      alert_attribute: new AlertAttribute(this.client),
+      alert_attributes: new AlertAttributes(this.client),
+      alert_events: new AlertEvents(this.client),
     }
   }
 }

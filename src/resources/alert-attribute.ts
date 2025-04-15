@@ -7,7 +7,7 @@ export interface AlertAttribute {
   array: boolean
 }
 
-export class AlertAttribute {
+export class AlertAttributes {
   constructor(private _client: ApiClient) {}
 
   create(params: Omit<AlertAttribute, "id">, options?: RequestOptions) {
